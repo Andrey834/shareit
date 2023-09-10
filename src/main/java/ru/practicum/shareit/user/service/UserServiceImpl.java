@@ -43,10 +43,9 @@ public class UserServiceImpl implements UserService {
         updateUser.setId(userId);
         checkDataUpdateUser(updateUser);
 
-        userRepository.updateUser(updateUser);
         log.info("Update User with ID:{}", userId);
 
-        User user = userRepository.getUser(userId);
+        User user = userRepository.updateUser(updateUser);
         return UserMapper.toUserDto(user);
     }
 
