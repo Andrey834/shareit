@@ -23,20 +23,20 @@ public class UserServiceImpl implements UserService {
     private int countId;
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto create(UserDto userDto) {
         User user = UserMapper.toUser(userDto);
         checkEmail(user);
 
         final int userId = generatedID();
         user.setId(userId);
 
-        User newUser = userRepository.saveUser(user);
+        User newUser = userRepository.save(user);
         log.info("Create new User with ID:{}", userId);
         return UserMapper.toUserDto(newUser);
     }
 
     @Override
-    public UserDto updateUser(int userId, UserDto userDto) {
+    public UserDto update(int userId, UserDto userDto) {
         User updateUser = UserMapper.toUser(userDto);
 
         checkUserId(userId);
@@ -45,31 +45,31 @@ public class UserServiceImpl implements UserService {
 
         log.info("Update User with ID:{}", userId);
 
-        User user = userRepository.updateUser(updateUser);
+        User user = userRepository.update(updateUser);
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto getUser(int userId) {
+    public UserDto get(int userId) {
         checkUserId(userId);
-        final User user = userRepository.getUser(userId);
+        final User user = userRepository.get(userId);
         log.info("Get User with ID:{}", userId);
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public List<UserDto> getUsers() {
+    public List<UserDto> getAll() {
         log.info("Get All Users");
-        return userRepository.getUsers()
+        return userRepository.getAll()
                 .stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void delete(int userId) {
         checkUserId(userId);
-        userRepository.deleteUser(userId);
+        userRepository.delete(userId);
         log.info("Delete User with ID:{}", userId);
     }
 
@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkEmail(User user) {
-        final List<User> userList = userRepository.getUsers();
+        final List<User> userList = userRepository.getAll();
         final String email = user.getEmail();
 
         if (email == null || email.isBlank() || email.isEmpty()) {
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkDataUpdateUser(User user) {
-        User oldUser = userRepository.getUser(user.getId());
+        User oldUser = userRepository.get(user.getId());
 
         if (user.getName() == null) {
             user.setName(oldUser.getName());
@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkUserId(int userId) {
-        User user = userRepository.getUser(userId);
+        User user = userRepository.get(userId);
         if (user == null) {
             log.info("User with ID:{} not found", userId);
             throw new UserNotFoundException("User with ID:" + userId + " not found");

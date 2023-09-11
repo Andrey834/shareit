@@ -13,31 +13,31 @@ public class UserRepositoryImpl implements UserRepository {
     private final Map<Integer, User> users = new HashMap<>();
 
     @Override
-    public User saveUser(User user) {
+    public User save(User user) {
         final int userId = user.getId();
         users.put(userId, user);
         return users.get(userId);
     }
 
     @Override
-    public User updateUser(User user) {
+    public User update(User user) {
         final int userId = user.getId();
         users.put(userId, user);
         return users.get(userId);
     }
 
     @Override
-    public User getUser(int userId) {
+    public User get(int userId) {
         return users.get(userId);
     }
 
     @Override
-    public List<User> getUsers() {
+    public List<User> getAll() {
         return new ArrayList<>(users.values());
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void delete(int userId) {
         users.remove(userId);
     }
 }

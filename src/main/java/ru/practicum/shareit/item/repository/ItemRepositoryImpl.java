@@ -13,26 +13,26 @@ public class ItemRepositoryImpl implements ItemRepository {
     private final Map<Integer, Item> items = new HashMap<>();
 
     @Override
-    public Item saveItem(Item item) {
+    public Item save(Item item) {
         final int itemId = item.getId();
         items.put(itemId, item);
-        return getItem(itemId);
+        return get(itemId);
     }
 
     @Override
-    public Item updateItem(Item item) {
+    public Item update(Item item) {
         final int itemId = item.getId();
         items.put(itemId, item);
-        return getItem(itemId);
+        return get(itemId);
     }
 
     @Override
-    public Item getItem(int itemId) {
+    public Item get(int itemId) {
         return items.get(itemId);
     }
 
     @Override
-    public List<Item> getItems() {
+    public List<Item> getAll() {
         return new ArrayList<>(items.values());
     }
 }

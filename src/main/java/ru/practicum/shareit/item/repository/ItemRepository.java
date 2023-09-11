@@ -5,11 +5,11 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemRepository {
-    Item saveItem(Item item);
+    Item save(Item item);
 
-    Item updateItem(Item item);
+    Item update(Item item);
 
-    Item getItem(int itemId);
+    Item get(int itemId);
 
-    List<Item> getItems();
+    List<Item> getAll();
 }

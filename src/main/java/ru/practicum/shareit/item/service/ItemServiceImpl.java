@@ -24,36 +24,36 @@ public class ItemServiceImpl implements ItemService {
     private int count = 0;
 
     @Override
-    public ItemDto createItem(int userId, ItemDto itemDto) {
+    public ItemDto create(int userId, ItemDto itemDto) {
         checkDataItem(itemDto);
-        userService.getUser(userId);
+        userService.get(userId);
         generatedId(itemDto);
         Item item = ItemMapper.toItem(userId, itemDto);
-        return ItemMapper.toItemDto(itemRepository.saveItem(item));
+        return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
     @Override
-    public ItemDto updateItem(int userId, ItemDto itemDto, int itemId) {
-        userService.getUser(userId);
+    public ItemDto update(int userId, ItemDto itemDto, int itemId) {
+        userService.get(userId);
         checkOwnerItem(itemId, userId);
 
-        ItemDto oldItemDto = getItem(userId, itemId);
+        ItemDto oldItemDto = get(userId, itemId);
         changeItemData(itemDto, oldItemDto);
 
         Item item = ItemMapper.toItem(userId, itemDto);
 
-        return ItemMapper.toItemDto(itemRepository.updateItem(item));
+        return ItemMapper.toItemDto(itemRepository.update(item));
     }
 
     @Override
-    public ItemDto getItem(int userId, int itemId) {
-        userService.getUser(userId);
-        return ItemMapper.toItemDto(itemRepository.getItem(itemId));
+    public ItemDto get(int userId, int itemId) {
+        userService.get(userId);
+        return ItemMapper.toItemDto(itemRepository.get(itemId));
     }
 
     @Override
-    public List<ItemDto> getItems(int userId) {
-        return itemRepository.getItems()
+    public List<ItemDto> getAll(int userId) {
+        return itemRepository.getAll()
                 .stream()
                 .filter(item -> item.getOwner() == userId)
                 .map(ItemMapper::toItemDto)
@@ -61,12 +61,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(int userId, String strSearch) {
-        userService.getUser(userId);
+    public List<ItemDto> search(int userId, String strSearch) {
+        userService.get(userId);
         String str = strSearch.toLowerCase();
         if (str.isBlank()) return new ArrayList<>();
 
-        return itemRepository.getItems()
+        return itemRepository.getAll()
                 .stream()
                 .filter(item ->
                         item.getDescription().toLowerCase().contains(str)
@@ -104,7 +104,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void checkOwnerItem(int itemId, int userId) {
-        Item item = itemRepository.getItem(itemId);
+        Item item = itemRepository.get(itemId);
         if (item.getOwner() != userId) {
             throw new WrongOwnerItemException("User with ID:" + userId + " is not the owner");
         }

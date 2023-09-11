@@ -15,9 +15,6 @@ import ru.practicum.shareit.user.service.UserService;
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -25,34 +22,34 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
-        return userService.createUser(userDto);
+    public UserDto create(@Valid @RequestBody UserDto userDto) {
+        return userService.create(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(
+    public UserDto update(
             @PathVariable(value = "userId") int userId,
             @Valid @RequestBody UserDto userDto
     ) {
-        return userService.updateUser(userId, userDto);
+        return userService.update(userId, userDto);
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUser(
+    public UserDto get(
             @PathVariable(value = "userId") int userId
     ) {
-        return userService.getUser(userId);
+        return userService.get(userId);
     }
 
     @GetMapping
-    public List<UserDto> getUsers() {
-        return userService.getUsers();
+    public List<UserDto> getAll() {
+        return userService.getAll();
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(
+    public void delete(
             @PathVariable(value = "userId") int userId
     ) {
-        userService.deleteUser(userId);
+        userService.delete(userId);
     }
 }

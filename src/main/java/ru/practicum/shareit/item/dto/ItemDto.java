@@ -3,11 +3,8 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/**
- * TODO Sprint add-controllers.
- */
-@AllArgsConstructor
 @Data
+@AllArgsConstructor
 public class ItemDto {
     private int id;
     private String name;
