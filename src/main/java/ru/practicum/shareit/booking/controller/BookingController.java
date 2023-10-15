@@ -1,6 +1,9 @@
 package ru.practicum.shareit.booking.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +17,8 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -23,43 +28,57 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingDto create(
+    public ResponseEntity<BookingDto> create(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @RequestBody @Valid BookingDto bookingDto
     ) {
-        return bookingService.save(userId, bookingDto);
+        return ResponseEntity.ok(bookingService.save(userId, bookingDto));
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto get(
+    public ResponseEntity<BookingDto> get(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @PathVariable(name = "bookingId") Integer bookingId
     ) {
-        return bookingService.get(userId, bookingId);
+        return ResponseEntity.ok(bookingService.get(userId, bookingId));
     }
 
     @GetMapping
-    public List<BookingDto> getAll(
+    public ResponseEntity<List<BookingDto>> getAll(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @RequestParam(name = "state", required = false, defaultValue = "ALL") String state
+            @RequestParam(name = "state", required = false, defaultValue = "ALL") String state,
+            @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size
     ) {
-        return bookingService.getAll(userId, state, false);
+        return ResponseEntity.ok(bookingService.getAll(
+                userId,
+                state,
+                false,
+                PageRequest.of(from, size, Sort.by("start").descending())
+        ));
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getAllOwner(
+    public ResponseEntity<List<BookingDto>> getAllOwner(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @RequestParam(name = "state", required = false, defaultValue = "ALL") String state
+            @RequestParam(name = "state", required = false, defaultValue = "ALL") String state,
+            @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size
     ) {
-        return bookingService.getAll(userId, state, true);
+        return ResponseEntity.ok(bookingService.getAll(
+                userId,
+                state,
+                true,
+                PageRequest.of(from, size, Sort.by("start").descending())
+        ));
     }
 
     @PatchMapping("/{bookingId}")
-    public BookingDto approveBooking(
+    public ResponseEntity<BookingDto> approveBooking(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @PathVariable(name = "bookingId") Integer bookingId,
             @RequestParam(name = "approved", defaultValue = "false") boolean approved
     ) {
-        return bookingService.approveBooking(userId, bookingId, approved);
+        return ResponseEntity.ok(bookingService.approveBooking(userId, bookingId, approved));
     }
 }
