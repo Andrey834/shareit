@@ -2,13 +2,16 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.enums.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.item.BadDataItemException;
+import ru.practicum.shareit.exception.item.ItemNotAvailableException;
 import ru.practicum.shareit.exception.item.ItemNotFoundException;
-import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.exception.booking.WrongOwnerItemException;
 import ru.practicum.shareit.item.dto.BookingItemDto;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -19,10 +22,9 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -35,24 +37,32 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final UserService userService;
+    private final RequestService requestService;
 
+    @Transactional
     @Override
     public ItemDto create(int userId, ItemDto itemDto) {
         checkDataItem(itemDto);
         UserDto userDto = userService.get(userId);
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(UserMapper.toUser(userDto));
-        Item newItem = itemRepository.save(item);
 
+        if (itemDto.getRequestId() != null && requestService.existsById(itemDto.getRequestId())) {
+            Integer requestId = itemDto.getRequestId();
+            item.setRequestId(requestId);
+        }
+
+        Item newItem = itemRepository.save(item);
         return ItemMapper.toItemDto(newItem);
     }
 
+    @Transactional
     @Override
     public ItemDto update(int userId, ItemDto itemDto, int itemId) {
         Item oldItem = getItemOwner(itemId, userId);
@@ -64,7 +74,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto get(Integer userId, Integer itemId) {
-        checkUser(userId);
+        userService.get(userId);
 
         Item item = itemRepository.findById(itemId).orElseThrow(
                 () -> new ItemNotFoundException("Item with ID:" + itemId + "not found")
@@ -84,32 +94,32 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAll(int userId) {
-        return itemRepository.findAllByOwnerId(userId).stream()
+    public List<ItemDto> getAll(int userId, Pageable pageable) {
+        return itemRepository.findAllByOwnerId(userId, pageable).stream()
                 .map(ItemMapper::toItemDto)
                 .peek(itemDto -> setLastNextBooking(itemDto, userId))
-                .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> search(int userId, String strSearch) {
-        checkUser(userId);
+    public List<ItemDto> search(int userId, String strSearch, Pageable pageable) {
+        userService.get(userId);
         if (strSearch.isBlank()) return new ArrayList<>();
 
-        List<Item> items = itemRepository
+        Page<Item> items = itemRepository
                 .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIsTrue(
-                        strSearch, strSearch
+                        strSearch,
+                        strSearch,
+                        pageable
                 );
 
-        return ItemMapper.listToItemDto(items);
+        return ItemMapper.listToItemDto(items.toList());
     }
 
+    @Transactional
     @Override
     public CommentDto addComment(Integer itemId, Integer userId, Comment comment) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new UserNotFoundException("User not found № " + userId)
-        );
+        UserDto userDto = userService.get(userId);
 
         Item item = itemRepository.findById(itemId).orElseThrow(
                 () -> new ItemNotFoundException("Item not found № " + itemId)
@@ -126,7 +136,7 @@ public class ItemServiceImpl implements ItemService {
                 .findFirst();
 
         if (booking.isPresent()) {
-            comment.setAuthorId(user);
+            comment.setAuthorId(UserMapper.toUser(userDto));
             comment.setItemId(item);
             comment.setCreated(LocalDateTime.now());
             Comment newComment = commentRepository.save(comment);
@@ -134,6 +144,16 @@ public class ItemServiceImpl implements ItemService {
         } else {
             throw new BadDataItemException("Comment can be added after using the item");
         }
+    }
+
+    @Override
+    public Item getAvailableItem(Integer itemId) {
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ItemNotFoundException("Item with ID:" + itemId + " not found"));
+
+        if (!item.isAvailable()) throw new ItemNotAvailableException("Item with ID:" + itemId + " not available");
+
+        return item;
     }
 
     private void checkDataItem(ItemDto itemDto) {
@@ -183,11 +203,5 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.findByOwnerIdAndIdIs(userId, itemId).orElseThrow(
                 () -> new WrongOwnerItemException("The user with ID:" + userId + " is not the owner")
         );
-    }
-
-    private void checkUser(Integer userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("User with ID:" + userId + " not found");
-        }
     }
 }
