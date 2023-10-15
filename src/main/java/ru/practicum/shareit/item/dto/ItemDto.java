@@ -14,4 +14,5 @@ public class ItemDto {
     private BookingItemDto nextBooking;
     private BookingItemDto lastBooking;
     private List<CommentDto> comments = new ArrayList<>();
+    private Integer requestId;
 }

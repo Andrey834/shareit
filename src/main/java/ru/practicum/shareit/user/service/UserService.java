@@ -13,5 +13,5 @@ public interface UserService {
 
     List<UserDto> getAll();
 
-    void delete(int userId);
+    boolean delete(int userId);
 }

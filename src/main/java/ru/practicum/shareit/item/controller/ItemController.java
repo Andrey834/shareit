@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +19,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
@@ -25,51 +30,62 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(
+    public ResponseEntity<ItemDto> create(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @RequestBody ItemDto itemDto
     ) {
-        return itemService.create(userId, itemDto);
+        return ResponseEntity.ok(itemService.create(userId, itemDto));
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(
+    public ResponseEntity<ItemDto> update(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @RequestBody ItemDto itemDto,
             @PathVariable int itemId
     ) {
-        return itemService.update(userId, itemDto, itemId);
+        return ResponseEntity.ok(itemService.update(userId, itemDto, itemId));
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto get(
+    public ResponseEntity<ItemDto> get(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @PathVariable(value = "itemId") Integer itemId
     ) {
-        return itemService.get(userId, itemId);
+        return ResponseEntity.ok(itemService.get(userId, itemId));
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto addComment(
+    public ResponseEntity<CommentDto> addComment(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
             @PathVariable(value = "itemId") Integer itemId,
             @RequestBody @Valid Comment comment
     ) {
-        return itemService.addComment(itemId, userId, comment);
+        return ResponseEntity.ok(itemService.addComment(itemId, userId, comment));
     }
 
     @GetMapping
-    public List<ItemDto> getAll(
-            @RequestHeader("X-Sharer-User-Id") Integer userId
+    public ResponseEntity<List<ItemDto>> getAll(
+            @RequestHeader("X-Sharer-User-Id") Integer userId,
+            @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size
     ) {
-        return itemService.getAll(userId);
+        return ResponseEntity.ok(itemService.getAll(
+                userId,
+                PageRequest.of(from, size, Sort.by("id")))
+        );
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(
+    public ResponseEntity<List<ItemDto>> search(
             @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @RequestParam(value = "text") String strSearch
+            @RequestParam(value = "text") String strSearch,
+            @RequestParam(name = "from", defaultValue = "0") Integer from,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
-        return itemService.search(userId, strSearch);
+        return ResponseEntity.ok(itemService.search(
+                userId,
+                strSearch,
+                PageRequest.of(from, size))
+        );
     }
 }
