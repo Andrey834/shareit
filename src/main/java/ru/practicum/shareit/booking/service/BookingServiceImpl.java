@@ -29,14 +29,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
 
-    @Transactional
     @Override
     public BookingDto save(Integer userId, BookingDto bookingDto) {
         UserDto userDto = userService.get(userId);
@@ -54,7 +53,6 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(newBooking);
     }
 
-    @Transactional
     @Override
     public BookingDto approveBooking(Integer userId, Integer bookingId, boolean approved) {
         Booking booking = getBooking(bookingId);
@@ -81,6 +79,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(booking);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public BookingDto get(Integer userId, Integer bookingId) {
         userService.get(userId);
@@ -96,6 +95,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<BookingDto> getAll(Integer userId, String state, boolean isOwner, Pageable pageable) {
         BookingState currentState;

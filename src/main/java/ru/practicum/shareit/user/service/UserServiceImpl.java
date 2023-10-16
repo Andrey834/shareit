@@ -16,11 +16,10 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    @Transactional
     @Override
     public UserDto create(UserDto userDto) {
         if (userDto.getEmail() == null) throw new UserWithoutEmailException("without email");
@@ -31,7 +30,6 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(newUser);
     }
 
-    @Transactional
     @Override
     public UserDto update(int userId, UserDto userDto) {
         UserDto oldUserDto = get(userId);
@@ -41,6 +39,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto get(int userId) {
         User user = userRepository.findById(userId).orElseThrow(
@@ -49,13 +48,13 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAll() {
         log.info("Get All Users");
         return UserMapper.listToUserDto(userRepository.findAll());
     }
 
-    @Transactional
     @Override
     public boolean delete(int userId) {
         if (userRepository.existsById(userId)) {
