@@ -3,8 +3,9 @@ package ru.practicum.shareit.user.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.model.User;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.exception.user.UserNotFoundException;
 import ru.practicum.shareit.exception.user.UserWithoutEmailException;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -15,6 +16,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
@@ -32,12 +34,12 @@ public class UserServiceImpl implements UserService {
     public UserDto update(int userId, UserDto userDto) {
         UserDto oldUserDto = get(userId);
         checkDataForUpdate(userDto, oldUserDto);
-
         User user = userRepository.save(UserMapper.toUser(userDto));
         log.info("Update User with ID:{}", userId);
         return UserMapper.toUserDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public UserDto get(int userId) {
         User user = userRepository.findById(userId).orElseThrow(
@@ -46,6 +48,7 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(user);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<UserDto> getAll() {
         log.info("Get All Users");
@@ -53,9 +56,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(int userId) {
-        userRepository.deleteById(userId);
-        log.info("Delete User with ID:{}", userId);
+    public boolean delete(int userId) {
+        if (userRepository.existsById(userId)) {
+            userRepository.deleteById(userId);
+            log.info("Delete User with ID:{}", userId);
+            return true;
+        }
+        return false;
     }
 
     private void checkDataForUpdate(UserDto updateUser, UserDto oldUserDto) {
