@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class RequestMapper {
     public static Request toRequest(RequestDto requestDto, User user) {
         Request request = new Request();
-        request.setId(request.getId());
         request.setDescription(requestDto.getDescription());
         request.setCreated(requestDto.getCreated());
         request.setRequestor(user);

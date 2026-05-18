@@ -30,7 +30,7 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<BookingDto> create(
-            @RequestHeader("X-Sharer-User-Id") Integer userId,
+            @RequestHeader("X-Sharer-User-Id") long userId,
             @RequestBody @Valid BookingDto bookingDto
     ) {
         return ResponseEntity.ok(bookingService.save(userId, bookingDto));
@@ -38,15 +38,15 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public ResponseEntity<BookingDto> get(
-            @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @PathVariable(name = "bookingId") Integer bookingId
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable(name = "bookingId") long bookingId
     ) {
         return ResponseEntity.ok(bookingService.get(userId, bookingId));
     }
 
     @GetMapping
     public ResponseEntity<List<BookingDto>> getAll(
-            @RequestHeader("X-Sharer-User-Id") Integer userId,
+            @RequestHeader("X-Sharer-User-Id") long userId,
             @RequestParam(name = "state", required = false, defaultValue = "ALL") String state,
             @RequestParam(name = "from", defaultValue = "0") @Min(0) int from,
             @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size,
@@ -62,8 +62,8 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public ResponseEntity<BookingDto> approveBooking(
-            @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @PathVariable(name = "bookingId") Integer bookingId,
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable(name = "bookingId") long bookingId,
             @RequestParam(name = "approved", defaultValue = "false") boolean approved
     ) {
         return ResponseEntity.ok(bookingService.approveBooking(userId, bookingId, approved));

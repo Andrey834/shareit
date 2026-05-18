@@ -55,8 +55,8 @@ public class RequestController {
 
     @GetMapping("/{requestId}")
     public ResponseEntity<RequestDto> get(
-            @RequestHeader("X-Sharer-User-Id") Integer userId,
-            @PathVariable(name = "requestId") Integer requestId
+            @RequestHeader("X-Sharer-User-Id") long userId,
+            @PathVariable(name = "requestId") long requestId
     ) {
         return ResponseEntity.ok(requestService.get(userId, requestId));
     }

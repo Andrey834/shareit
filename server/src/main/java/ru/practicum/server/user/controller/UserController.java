@@ -31,7 +31,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<UserDto> update(
-            @PathVariable(value = "userId") Integer userId,
+            @PathVariable(value = "userId") long userId,
             @Valid @RequestBody UserDto userDto
     ) {
         return ResponseEntity.ok(userService.update(userId, userDto));
@@ -39,7 +39,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> get(
-            @PathVariable(value = "userId") Integer userId
+            @PathVariable(value = "userId") long userId
     ) {
         return ResponseEntity.ok(userService.get(userId));
     }
@@ -51,7 +51,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Boolean> delete(
-            @PathVariable(value = "userId") Integer userId
+            @PathVariable(value = "userId") long userId
     ) {
         return ResponseEntity.ok(userService.delete(userId));
     }

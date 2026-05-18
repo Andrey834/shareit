@@ -25,9 +25,9 @@ public class Comment {
     private String text;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", referencedColumnName = "id")
-    private Item itemId;
+    private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", referencedColumnName = "id")
-    private User authorId;
+    private User author;
     private LocalDateTime created;
 }

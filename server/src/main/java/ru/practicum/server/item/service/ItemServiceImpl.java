@@ -83,7 +83,7 @@ public class ItemServiceImpl implements ItemService {
 
         setLastNextBooking(itemDto, userId);
 
-        List<CommentDto> comments = commentRepository.findAllByItemId_Id(itemId).stream()
+        List<CommentDto> comments = commentRepository.findAllByItem_Id(itemId).stream()
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
 
@@ -135,8 +135,8 @@ public class ItemServiceImpl implements ItemService {
                 .findFirst();
 
         if (booking.isPresent()) {
-            comment.setAuthorId(UserMapper.toUser(userDto));
-            comment.setItemId(item);
+            comment.setAuthor(UserMapper.toUser(userDto));
+            comment.setItem(item);
             comment.setCreated(LocalDateTime.now());
             Comment newComment = commentRepository.save(comment);
             return CommentMapper.toCommentDto(newComment);
